@@ -1,0 +1,21 @@
+{
+  "name": "waha-whatsapp-control-panel",
+  "version": "1.0.0",
+  "description": "A beautiful Web Dashboard and Proxy Server to control WAHA (WhatsApp HTTP API)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  },
+  "keywords": [
+    "waha",
+    "whatsapp",
+    "control-panel",
+    "dashboard"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}

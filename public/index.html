@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WAHA WhatsApp Control Panel</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+            <path d="M12.004 2C6.51 2 2.014 6.5 2.014 12c0 2.18.7 4.21 1.89 5.87L2.5 22l4.31-1.37A9.9 9.9 0 0 0 12.004 22c5.49 0 9.99-4.5 9.99-10S17.494 2 12.004 2zm0 18.25c-1.89 0-3.69-.53-5.24-1.45l-.38-.22-2.58.82.84-2.52-.25-.4a8.21 8.21 0 0 1-1.27-4.48c0-4.55 3.7-8.25 8.25-8.25s8.25 3.7 8.25 8.25-3.7 8.25-8.25 8.25zM15.57 13.56c-.2-.1-.1.2-.21-.3-.12-.22-.72-1.07-.84-1.23-.12-.16-.25-.24-.41-.24s-.3.08-.43.2c-.13.12-.51.62-.63.78-.12.16-.24.18-.44.08-.85-.42-1.49-.91-1.99-1.46-.22-.24-.34-.52-.16-.72.06-.07.12-.14.19-.21.13-.13.17-.23.25-.39.08-.16.04-.3-.02-.4-.06-.1-.53-1.27-.72-1.74-.19-.46-.4-.4-.53-.4s-.3-.02-.46-.02a.89.89 0 0 0-.66.3c-.22.25-.86.84-.86 2.05s.89 2.38.99 2.52c.1.14 1.75 2.67 4.23 3.74.59.25 1.05.4 1.41.52.59.19 1.13.16 1.56.1.47-.07 1.46-.6 1.66-1.18.2-.58.2-1.08.14-1.18-.06-.12-.21-.21-.41-.31z"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>WAHA</h1>
+          <span>Control Panel</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-menu">
+        <button class="menu-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          Dashboard
+        </button>
+        <button class="menu-item" data-tab="api-console">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          API Console
+        </button>
+        <button class="menu-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span class="version-badge">v1.0.0</span>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-title-container">
+          <h2 id="page-title">Dashboard</h2>
+        </div>
+        <div class="header-status">
+          <div class="status-pill offline" id="connection-status-pill">
+            <span class="status-indicator-dot"></span>
+            <span id="connection-status-text">Disconnected</span>
+          </div>
+          <div class="session-badge" id="current-session-badge">
+            Session: <strong id="active-session-name">default</strong>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <div class="content-body">
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="tab-view active">
+          <!-- Server Offline Warning -->
+          <div class="glass-card warning-banner hidden" id="waha-offline-banner">
+            <div class="warning-icon-wrapper">
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+            </div>
+            <div class="warning-content">
+              <h4>WAHA Server is Offline</h4>
+              <p>The control panel cannot reach the WAHA server at <strong id="waha-warning-url">http://localhost:3000</strong>. Please make sure the WAHA Docker container is running by opening your command prompt and executing:</p>
+              <div class="code-snippet-box banner-code-box">
+                <pre><code>docker run -it -p 3000:3000/tcp devlikeapro/waha</code></pre>
+                <button type="button" class="copy-code-btn" data-clipboard="docker run -it -p 3000:3000/tcp devlikeapro/waha">Copy</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overview Cards -->
+          <div class="grid-overview">
+            <div class="glass-card overview-card">
+              <div class="card-icon blue">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+              </div>
+              <div class="card-details">
+                <h3>Session Status</h3>
+                <p class="status-highlight text-muted" id="dashboard-session-status">Unknown</p>
+              </div>
+            </div>
+            <div class="glass-card overview-card">
+              <div class="card-icon green">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+              </div>
+              <div class="card-details">
+                <h3>WAHA Server</h3>
+                <p id="dashboard-waha-url" class="text-truncate">Not Set</p>
+              </div>
+            </div>
+            <div class="glass-card overview-card">
+              <div class="card-icon purple">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              </div>
+              <div class="card-details">
+                <h3>Active Session</h3>
+                <p id="dashboard-session-name">default</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Session Lifecycle & Connection Management -->
+          <div class="dashboard-grid">
+            <!-- Session Controls -->
+            <div class="glass-card block-card">
+              <div class="card-header">
+                <h3>Session Management</h3>
+                <p>Start, Stop or Logout your WhatsApp web session</p>
+              </div>
+              <div class="card-body">
+                <div class="session-actions-grid">
+                  <button class="btn btn-primary btn-icon" id="btn-session-start">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                    Start Session
+                  </button>
+                  <button class="btn btn-danger btn-icon" id="btn-session-stop">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect></svg>
+                    Stop Session
+                  </button>
+                  <button class="btn btn-warning btn-icon" id="btn-session-logout">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    Logout WhatsApp
+                  </button>
+                  <button class="btn btn-secondary btn-icon" id="btn-session-refresh">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                    Check Status
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR Code Scan Area -->
+            <div class="glass-card block-card qr-card-container">
+              <div class="card-header">
+                <h3>Scan QR Code</h3>
+                <p>Link your device to WAHA</p>
+              </div>
+              <div class="card-body qr-body-center">
+                <!-- QR states -->
+                <div class="qr-placeholder" id="qr-state-placeholder">
+                  <div class="qr-icon-wrapper">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><line x1="7" y1="7" x2="7.01" y2="7"></line><line x1="17" y1="7" x2="17.01" y2="7"></line><line x1="17" y1="17" x2="17.01" y2="17"></line><line x1="7" y1="17" x2="7.01" y2="17"></line></svg>
+                  </div>
+                  <p>QR code will be displayed here when the session is initialized and awaiting scan.</p>
+                </div>
+
+                <div class="qr-loading hidden" id="qr-state-loading">
+                  <div class="spinner"></div>
+                  <p>Retrieving QR Code from WAHA...</p>
+                </div>
+
+                <div class="qr-container hidden" id="qr-state-display">
+                  <div class="qr-image-wrapper">
+                    <img id="qr-code-img" src="" alt="WhatsApp QR Code">
+                  </div>
+                  <span class="qr-timer" id="qr-expiry-indicator">Refreshing...</span>
+                  <p class="qr-instructions">Open WhatsApp on your phone, go to Linked Devices -> Link a Device, and point your camera here.</p>
+                </div>
+
+                <div class="qr-connected hidden" id="qr-state-connected">
+                  <div class="success-icon-wrapper">
+                    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                  </div>
+                  <p class="text-success font-bold">Successfully Connected!</p>
+                  <p class="text-xs">Your WhatsApp session is active and ready to send messages.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- API CONSOLE VIEW -->
+        <section id="view-api-console" class="tab-view">
+          <div class="console-layout">
+            <!-- Left Side: Forms -->
+            <div class="console-form-container">
+              <div class="glass-card form-card">
+                <!-- API Section Selector tabs -->
+                <div class="form-tabs-container">
+                  <div class="form-tabs">
+                    <button class="form-tab active" data-api-tab="send-text">Text</button>
+                    <button class="form-tab" data-api-tab="send-image">Image</button>
+                    <button class="form-tab" data-api-tab="send-video">Video</button>
+                    <button class="form-tab" data-api-tab="send-audio">Audio</button>
+                    <button class="form-tab" data-api-tab="send-file">Document</button>
+                    <button class="form-tab" data-api-tab="send-location">Location</button>
+                    <button class="form-tab" data-api-tab="send-contact">Contact</button>
+                    <button class="form-tab" data-api-tab="send-custom">Custom</button>
+                  </div>
+                </div>
+
+                <!-- API Panel Content -->
+                <div class="form-panels">
+                  <!-- Common fields context -->
+                  <div class="common-fields">
+                    <div class="form-group">
+                      <label for="api-chat-id">Recipient Phone Number <span class="required">*</span></label>
+                      <input type="text" id="api-chat-id" placeholder="e.g., 919876543210 (International format)" required>
+                      <span class="input-tip">Numbers will automatically append @c.us suffix. For groups, add @g.us manually.</span>
+                    </div>
+                  </div>
+
+                  <!-- TEXT PANEL -->
+                  <div class="form-panel active" id="panel-send-text">
+                    <div class="form-group">
+                      <label for="text-message">Message Text <span class="required">*</span></label>
+                      <textarea id="text-message" rows="5" placeholder="Type your WhatsApp message here..." required></textarea>
+                    </div>
+                  </div>
+
+                  <!-- IMAGE PANEL -->
+                  <div class="form-panel" id="panel-send-image">
+                    <div class="form-group">
+                      <label>Image Source <span class="required">*</span></label>
+                      <div class="toggle-container">
+                        <label class="toggle-option active" data-src-toggle="local" data-target="image">
+                          <input type="radio" name="image-src-type" value="local" checked hidden>
+                          Upload File
+                        </label>
+                        <label class="toggle-option" data-src-toggle="url" data-target="image">
+                          <input type="radio" name="image-src-type" value="url" hidden>
+                          File URL
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group file-input-group" id="image-local-group">
+                      <label for="image-file" class="file-dropzone">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Choose an Image or drag it here</span>
+                        <span class="file-meta" id="image-file-info">JPEG, PNG (Max 5MB)</span>
+                        <input type="file" id="image-file" accept="image/jpeg,image/png" hidden>
+                      </label>
+                    </div>
+
+                    <div class="form-group url-input-group hidden" id="image-url-group">
+                      <label for="image-url">Image URL</label>
+                      <input type="url" id="image-url" placeholder="https://example.com/path/to/image.jpg">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="image-caption">Caption</label>
+                      <input type="text" id="image-caption" placeholder="Optional caption for the image">
+                    </div>
+                  </div>
+
+                  <!-- VIDEO PANEL -->
+                  <div class="form-panel" id="panel-send-video">
+                    <div class="form-group">
+                      <label>Video Source <span class="required">*</span></label>
+                      <div class="toggle-container">
+                        <label class="toggle-option active" data-src-toggle="local" data-target="video">
+                          <input type="radio" name="video-src-type" value="local" checked hidden>
+                          Upload File
+                        </label>
+                        <label class="toggle-option" data-src-toggle="url" data-target="video">
+                          <input type="radio" name="video-src-type" value="url" hidden>
+                          File URL
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="form-group file-input-group" id="video-local-group">
+                      <label for="video-file" class="file-dropzone">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Choose a Video or drag it here</span>
+                        <span class="file-meta" id="video-file-info">MP4 (Max 16MB)</span>
+                        <input type="file" id="video-file" accept="video/mp4" hidden>
+                      </label>
+                    </div>
+
+                    <div class="form-group url-input-group hidden" id="video-url-group">
+                      <label for="video-url">Video URL</label>
+                      <input type="url" id="video-url" placeholder="https://example.com/path/to/video.mp4">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="video-caption">Caption</label>
+                      <input type="text" id="video-caption" placeholder="Optional caption for the video">
+                    </div>
+                  </div>
+
+                  <!-- AUDIO PANEL -->
+                  <div class="form-panel" id="panel-send-audio">
+                    <div class="form-group">
+                      <label>Audio Source <span class="required">*</span></label>
+                      <div class="toggle-container">
+                        <label class="toggle-option active" data-src-toggle="local" data-target="audio">
+                          <input type="radio" name="audio-src-type" value="local" checked hidden>
+                          Upload File
+                        </label>
+                        <label class="toggle-option" data-src-toggle="url" data-target="audio">
+                          <input type="radio" name="audio-src-type" value="url" hidden>
+                          File URL
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="form-group file-input-group" id="audio-local-group">
+                      <label for="audio-file" class="file-dropzone">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Choose an Audio file or drag it here</span>
+                        <span class="file-meta" id="audio-file-info">MP3, AAC, OGG (Max 16MB)</span>
+                        <input type="file" id="audio-file" accept="audio/mpeg,audio/aac,audio/ogg,audio/wav" hidden>
+                      </label>
+                    </div>
+
+                    <div class="form-group url-input-group hidden" id="audio-url-group">
+                      <label for="audio-url">Audio URL</label>
+                      <input type="url" id="audio-url" placeholder="https://example.com/path/to/audio.mp3">
+                    </div>
+                  </div>
+
+                  <!-- DOCUMENT PANEL -->
+                  <div class="form-panel" id="panel-send-file">
+                    <div class="form-group">
+                      <label>Document Source <span class="required">*</span></label>
+                      <div class="toggle-container">
+                        <label class="toggle-option active" data-src-toggle="local" data-target="file">
+                          <input type="radio" name="file-src-type" value="local" checked hidden>
+                          Upload File
+                        </label>
+                        <label class="toggle-option" data-src-toggle="url" data-target="file">
+                          <input type="radio" name="file-src-type" value="url" hidden>
+                          File URL
+                        </label>
+                      </div>
+                    </div>
+
+                    <div class="form-group file-input-group" id="file-local-group">
+                      <label for="file-file" class="file-dropzone">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Choose a Document or drag it here</span>
+                        <span class="file-meta" id="file-file-info">PDF, DOCX, ZIP, etc.</span>
+                        <input type="file" id="file-file" hidden>
+                      </label>
+                    </div>
+
+                    <div class="form-group url-input-group hidden" id="file-url-group">
+                      <label for="file-url">Document URL</label>
+                      <input type="url" id="file-url" placeholder="https://example.com/path/to/document.pdf">
+                    </div>
+
+                    <div class="form-group">
+                      <label for="file-filename">Filename <span class="required">*</span></label>
+                      <input type="text" id="file-filename" placeholder="e.g. document.pdf">
+                    </div>
+                  </div>
+
+                  <!-- LOCATION PANEL -->
+                  <div class="form-panel" id="panel-send-location">
+                    <div class="grid-2-col">
+                      <div class="form-group">
+                        <label for="location-lat">Latitude <span class="required">*</span></label>
+                        <input type="number" step="any" id="location-lat" placeholder="e.g., 28.6139" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="location-lng">Longitude <span class="required">*</span></label>
+                        <input type="number" step="any" id="location-lng" placeholder="e.g., 77.2090" required>
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="location-name">Location / Address Name</label>
+                      <input type="text" id="location-name" placeholder="e.g., Connaught Place, New Delhi">
+                    </div>
+                  </div>
+
+                  <!-- CONTACT PANEL -->
+                  <div class="form-panel" id="panel-send-contact">
+                    <div class="grid-2-col">
+                      <div class="form-group">
+                        <label for="contact-firstname">First Name <span class="required">*</span></label>
+                        <input type="text" id="contact-firstname" placeholder="First Name" required>
+                      </div>
+                      <div class="form-group">
+                        <label for="contact-lastname">Last Name</label>
+                        <input type="text" id="contact-lastname" placeholder="Last Name">
+                      </div>
+                    </div>
+                    <div class="form-group">
+                      <label for="contact-phone">Contact Phone Number <span class="required">*</span></label>
+                      <input type="text" id="contact-phone" placeholder="e.g., +919876543210" required>
+                    </div>
+                  </div>
+
+                  <!-- CUSTOM PANEL -->
+                  <div class="form-panel" id="panel-send-custom">
+                    <div class="form-group">
+                      <label for="custom-endpoint">WAHA API Endpoint <span class="required">*</span></label>
+                      <input type="text" id="custom-endpoint" placeholder="e.g. api/sendPoll or api/sessions" required>
+                      <span class="input-tip">Endpoint path relative to server root URL</span>
+                    </div>
+                    <div class="form-group">
+                      <label for="custom-method">HTTP Method</label>
+                      <select id="custom-method" class="form-select">
+                        <option value="POST">POST</option>
+                        <option value="GET">GET</option>
+                        <option value="DELETE">DELETE</option>
+                        <option value="PATCH">PATCH</option>
+                      </select>
+                    </div>
+                    <div class="form-group">
+                      <label for="custom-payload">Custom JSON Payload</label>
+                      <textarea id="custom-payload" rows="6" class="code-editor-input" placeholder='{
+  "chatId": "919876543210@c.us",
+  "text": "Hello from custom API!"
+}'></textarea>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="form-actions">
+                  <button type="button" class="btn btn-success btn-lg btn-icon" id="btn-api-send">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    Execute API Request
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Side: API logs / outputs -->
+            <div class="console-output-container">
+              <div class="glass-card output-card">
+                <div class="card-header flex-header">
+                  <div>
+                    <h3>Response Console</h3>
+                    <p>Request payload and server responses</p>
+                  </div>
+                  <button class="btn btn-xs btn-outline" id="btn-clear-logs">Clear Logs</button>
+                </div>
+                <div class="card-body console-body">
+                  <div class="console-log-feed" id="console-feed">
+                    <div class="console-log-empty">
+                      <div class="console-placeholder-icon">
+                        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                      </div>
+                      <p>Trigger requests to see exact JSON bodies and responses</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SETTINGS VIEW -->
+        <section id="view-settings" class="tab-view">
+          <div class="settings-grid">
+            <div class="glass-card settings-card">
+              <div class="card-header">
+                <h3>WAHA Server Settings</h3>
+                <p>Configure details for connecting to your WhatsApp HTTP API instance</p>
+              </div>
+              <div class="card-body">
+                <form id="settings-form">
+                  <div class="form-group">
+                    <label for="settings-waha-url">WAHA URL <span class="required">*</span></label>
+                    <input type="url" id="settings-waha-url" value="http://localhost:3000" placeholder="e.g. http://localhost:3000" required>
+                    <span class="input-tip">Specify the domain/IP and port where WAHA docker is running.</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-web-secret">API Key / Web Secret (X-Api-Key)</label>
+                    <input type="password" id="settings-web-secret" placeholder="Enter API Web Secret key if configured" autocomplete="off">
+                    <span class="input-tip">Leave empty if WAHA runs without authentication (`WAHA_API_KEY` is not set).</span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="settings-session-id">Active Session ID <span class="required">*</span></label>
+                    <input type="text" id="settings-session-id" value="default" placeholder="e.g., default" required>
+                    <span class="input-tip">The WAHA session profile name. Defaults to 'default'.</span>
+                  </div>
+
+                  <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">Save Settings</button>
+                    <button type="button" class="btn btn-secondary" id="btn-settings-test">Test Connection</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Configuration Helper info -->
+            <div class="glass-card block-card">
+              <div class="card-header">
+                <h3>Docker Cheat Sheet</h3>
+                <p>How to quickly spin up a WAHA instance locally</p>
+              </div>
+              <div class="card-body sheet-body">
+                <p>To run WAHA locally, open your terminal (Command Prompt/PowerShell) and execute the following Docker command:</p>
+                <div class="code-snippet-box">
+                  <pre><code>docker run -it -p 3000:3000/tcp devlikeapro/waha</code></pre>
+                  <button class="copy-code-btn" data-clipboard="docker run -it -p 3000:3000/tcp devlikeapro/waha">Copy</button>
+                </div>
+                <div class="divider"></div>
+                <p>If you want to configure an API Key (Web Secret), use:</p>
+                <div class="code-snippet-box">
+                  <pre><code>docker run -it -p 3000:3000/tcp -e WAHA_API_KEY=my_secure_secret devlikeapro/waha</code></pre>
+                  <button class="copy-code-btn" data-clipboard="docker run -it -p 3000:3000/tcp -e WAHA_API_KEY=my_secure_secret devlikeapro/waha">Copy</button>
+                </div>
+                <p class="text-xs text-muted" style="margin-top: 1rem;">Make sure you copy this secret and paste it inside the "API Key / Web Secret" field on the left.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- JavaScript logic -->
+  <script src="app.js"></script>
+</body>
+</html>
