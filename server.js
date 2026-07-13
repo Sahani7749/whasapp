@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { WahaClient } = require('waha-node');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -15,11 +16,13 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 // Serve static frontend files from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Dynamic Proxy Endpoint to bypass browser CORS
+// Dynamic Proxy Endpoint using waha-node library
 app.post('/api/proxy', async (req, res) => {
   const wahaUrl = req.headers['x-waha-url'];
   const wahaApiKey = req.headers['x-waha-api-key'];
   const wahaEndpoint = req.headers['x-waha-endpoint'];
+  const method = req.body.method || 'POST';
+  const payload = req.body.payload;
 
   if (!wahaUrl) {
     return res.status(400).json({ error: 'Missing x-waha-url header' });
@@ -28,57 +31,76 @@ app.post('/api/proxy', async (req, res) => {
     return res.status(400).json({ error: 'Missing x-waha-endpoint header' });
   }
 
-  // Construct target URL (ensure trailing slash handling is clean)
-  const baseUrl = wahaUrl.endsWith('/') ? wahaUrl.slice(0, -1) : wahaUrl;
-  const endpointPath = wahaEndpoint.startsWith('/') ? wahaEndpoint : `/${wahaEndpoint}`;
-  const targetUrl = `${baseUrl}${endpointPath}`;
-
-  // Prepare headers for WAHA
-  const headers = {
-    'Content-Type': 'application/json',
-  };
-
-  if (wahaApiKey && wahaApiKey.trim() !== '') {
-    headers['X-Api-Key'] = wahaApiKey;
-  }
-
-  console.log(`[Proxy] Forwarding request to: ${targetUrl} (Method: ${req.body.method || 'POST'})`);
+  console.log(`[Proxy] Forwarding request to WAHA (${wahaUrl}) using waha-node: ${wahaEndpoint} (${method})`);
 
   try {
-    const method = req.body.method || 'POST';
-    const fetchOptions = {
-      method: method,
-      headers: headers,
-    };
+    const client = new WahaClient(wahaUrl, wahaApiKey);
+    let result;
 
-    // If method is not GET or HEAD, attach the body
-    if (method !== 'GET' && method !== 'HEAD' && req.body.payload) {
-      fetchOptions.body = JSON.stringify(req.body.payload);
-    }
-
-    const response = await fetch(targetUrl, fetchOptions);
-    const contentType = response.headers.get('content-type');
-
-    let data;
-    if (contentType && contentType.includes('application/json')) {
-      data = await response.json();
+    // Route endpoints to SDK methods
+    if (wahaEndpoint === 'api/sessions' && method === 'GET') {
+      result = await client.sessions.list();
+    } else if (wahaEndpoint === 'api/sessions' && method === 'POST') {
+      result = await client.sessions.create(payload.name);
+    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/start$/)) {
+      const session = wahaEndpoint.split('/')[2];
+      result = await client.sessions.start(session);
+    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/stop$/)) {
+      const session = wahaEndpoint.split('/')[2];
+      result = await client.sessions.stop(session);
+    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/logout$/)) {
+      const session = wahaEndpoint.split('/')[2];
+      result = await client.sessions.logout(session);
+    } else if (wahaEndpoint.match(/^api\/([^\/]+)\/auth\/qr$/)) {
+      const session = wahaEndpoint.split('/')[1];
+      // waha-node's getQr returns the QR code Axios response or binary buffer.
+      // Format: 'image' | 'raw', download: true
+      const qrRes = await client.sessions.getQr(session, 'image', true);
+      result = qrRes;
+    } else if (wahaEndpoint === 'api/sendText') {
+      result = await client.messages.sendText(payload.session, payload.chatId, payload.text);
+    } else if (wahaEndpoint === 'api/sendImage') {
+      result = await client.messages.sendImage(payload.session, payload.chatId, payload.file, payload.caption);
+    } else if (wahaEndpoint === 'api/sendVideo') {
+      result = await client.messages.sendVideo(payload.session, payload.chatId, payload.file, payload.caption);
+    } else if (wahaEndpoint === 'api/sendAudio') {
+      // Map sendAudio to sendVoice in the SDK
+      result = await client.messages.sendVoice(payload.session, payload.chatId, payload.file);
+    } else if (wahaEndpoint === 'api/sendFile') {
+      result = await client.messages.sendFile(payload.session, payload.chatId, payload.file);
+    } else if (wahaEndpoint === 'api/sendLocation') {
+      result = await client.messages.sendLocation(payload.session, payload.chatId, {
+        latitude: payload.latitude,
+        longitude: payload.longitude,
+        name: payload.name
+      });
+    } else if (wahaEndpoint === 'api/sendContactVcard') {
+      // Map sendContactVcard to sendContact
+      result = await client.messages.sendContact(payload.session, payload.chatId, payload.contact);
     } else {
-      // If it's a binary response (like QR code image), we can read it as buffer and return base64
-      const buffer = await response.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString('base64');
-      data = {
-        _isBinary: true,
-        mimetype: contentType || 'image/png',
-        data: base64
-      };
+      // Generic fallback using client prototype HTTP methods (GET, POST, etc.) for custom queries
+      if (method === 'GET') {
+        result = await client.get(wahaEndpoint);
+      } else if (method === 'POST') {
+        result = await client.post(wahaEndpoint, payload);
+      } else if (method === 'DELETE') {
+        result = await client.delete(wahaEndpoint);
+      } else if (method === 'PUT') {
+        result = await client.put(wahaEndpoint, payload);
+      }
     }
 
-    res.status(response.status).json(data);
+    // Return the response data (if Axios response, send result.data, otherwise result)
+    const responseData = result && result.data !== undefined ? result.data : result;
+    res.status(200).json(responseData);
   } catch (error) {
-    console.error('[Proxy Error]:', error.message);
-    res.status(500).json({
-      error: 'Failed to connect to WAHA instance',
-      details: error.message
+    console.error('[Proxy Error via SDK]:', error.message);
+    const status = error.response ? error.response.status : 500;
+    const details = error.response ? error.response.data : error.message;
+
+    res.status(status).json({
+      error: 'WAHA SDK Request Failed',
+      details: details
     });
   }
 });
