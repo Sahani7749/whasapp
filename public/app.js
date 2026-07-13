@@ -89,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSettingsForm();
   setupWebhookForm();
   loadWebhookSettings();
+  updateDocsBaseUrl();
   setupSessionActions();
   setupApiConsole();
   setupFilePickers();
@@ -1067,5 +1068,77 @@ function setupWebhookForm() {
   }
   if (elements.btnWebhookDelete) {
     elements.btnWebhookDelete.addEventListener('click', deleteWebhook);
+  }
+}
+
+// Dynamically update API documentation base URLs to match current site domain
+function updateDocsBaseUrl() {
+  const currentOrigin = window.location.origin;
+  const baseUrlEl = document.getElementById('docs-base-url');
+  if (baseUrlEl) {
+    baseUrlEl.textContent = currentOrigin;
+  }
+  
+  // Update curl examples
+  const curlTextEl = document.getElementById('example-text-curl');
+  if (curlTextEl) {
+    curlTextEl.textContent = `curl -X POST ${currentOrigin}/api/send/text \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "text": "Hello from my CRM!"}'`;
+    curlTextEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/text -H "Content-Type: application/json" -d '{"to": "919876543210", "text": "Hello from my CRM!"}'`;
+  }
+
+  const curlImageEl = document.getElementById('example-image-curl');
+  if (curlImageEl) {
+    curlImageEl.textContent = `curl -X POST ${currentOrigin}/api/send/image \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "file": {"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}, "caption": "Beautiful design!"}'`;
+    curlImageEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/image -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}, "caption": "Beautiful design!"}'`;
+  }
+
+  const curlVideoEl = document.getElementById('example-video-curl');
+  if (curlVideoEl) {
+    curlVideoEl.textContent = `curl -X POST ${currentOrigin}/api/send/video \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "file": {"url": "https://www.w3schools.com/html/mov_bbb.mp4"}, "caption": "Enjoy the video!"}'`;
+    curlVideoEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/video -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://www.w3schools.com/html/mov_bbb.mp4"}, "caption": "Enjoy the video!"}'`;
+  }
+
+  // Update PHP & Python templates
+  const phpEl = document.getElementById('php-template-box');
+  const btnPhp = document.getElementById('btn-copy-php');
+  if (phpEl && btnPhp) {
+    const code = `<?php
+$curl = curl_init();
+curl_setopt_array($curl, [
+  CURLOPT_URL => '${currentOrigin}/api/send/text',
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_CUSTOMREQUEST => 'POST',
+  CURLOPT_POSTFIELDS => json_encode([
+    'to' => '919876543210',
+    'text' => 'Hello from PHP script!'
+  ]),
+  CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+]);
+$response = curl_exec($curl);
+curl_close($curl);
+echo $response;
+?>`;
+    phpEl.textContent = code;
+    btnPhp.dataset.clipboard = code;
+  }
+
+  const pythonEl = document.getElementById('python-template-box');
+  const btnPython = document.getElementById('btn-copy-python');
+  if (pythonEl && btnPython) {
+    const code = `import requests
+
+url = "${currentOrigin}/api/send/text"
+payload = {
+    "to": "919876543210",
+    "text": "Hello from Python script!"
+}
+headers = {
+    "Content-Type": "application/json"
+}
+
+response = requests.post(url, json=payload, headers=headers)
+print(response.json())`;
+    pythonEl.textContent = code;
+    btnPython.dataset.clipboard = code;
   }
 }
