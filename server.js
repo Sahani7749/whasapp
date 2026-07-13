@@ -22,9 +22,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 let sock = null;
 let sessionStatus = 'STOPPED';
 let qrCodeString = null;
+const AUTH_DIR = path.join(__dirname, 'auth_info_baileys');
 
 // Initialize WhatsApp connection if credentials already exist (auto-connect on startup)
-if (fs.existsSync(path.join(__dirname, 'auth_info_baileys', 'creds.json'))) {
+if (fs.existsSync(path.join(AUTH_DIR, 'creds.json'))) {
   console.log('[Baileys] Credentials found. Auto-connecting...');
   connectToWhatsApp();
 }
@@ -40,7 +41,7 @@ async function connectToWhatsApp() {
   console.log('[Baileys] Starting WhatsApp connection...');
 
   try {
-    const { state, saveCreds } = await useMultiFileAuthState('auth_info_baileys');
+    const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
 
     sock = makeWASocket({
       auth: state,
@@ -114,7 +115,7 @@ async function logoutSession() {
 
   // Clear credentials
   try {
-    fs.rmSync(path.join(__dirname, 'auth_info_baileys'), { recursive: true, force: true });
+    fs.rmSync(AUTH_DIR, { recursive: true, force: true });
     console.log('[Baileys] Credentials folder cleared.');
   } catch (err) {
     console.error('[Baileys] Error deleting credentials directory:', err.message);
@@ -125,7 +126,6 @@ async function logoutSession() {
 function getMediaContent(file) {
   if (!file) return null;
   if (file.data) {
-    // Base64 format: data:image/jpeg;base64,iVBORw0KGgoAAA...
     const base64Data = file.data.split(';base64,').pop();
     return Buffer.from(base64Data, 'base64');
   } else if (file.url) {
@@ -146,105 +146,188 @@ function getJid(chatId) {
   return cleaned;
 }
 
-// Local API handler replacing the WAHA proxy
-app.post('/api/proxy', async (req, res) => {
-  const wahaEndpoint = req.headers['x-waha-endpoint'];
-  const method = req.body.method || 'POST';
-  const payload = req.body.payload;
+// ==========================================
+// REST API ENDPOINTS FOR SESSION MANAGEMENT
+// ==========================================
 
-  if (!wahaEndpoint) {
-    return res.status(400).json({ error: 'Missing x-waha-endpoint header' });
+// Get session status
+app.get('/api/session/status', (req, res) => {
+  res.status(200).json({ status: sessionStatus });
+});
+
+// Get session QR Code
+app.get('/api/session/qr', (req, res) => {
+  if (qrCodeString) {
+    res.status(200).json({ value: qrCodeString });
+  } else {
+    res.status(404).json({ error: 'QR Code not generated yet or session is already linked.' });
   }
+});
 
-  console.log(`[API Handler] Executing direct Baileys action for: ${wahaEndpoint}`);
+// Start session
+app.post('/api/session/start', async (req, res) => {
+  await connectToWhatsApp();
+  res.status(200).json({ status: sessionStatus });
+});
 
+// Stop session
+app.post('/api/session/stop', async (req, res) => {
+  await stopSession();
+  res.status(200).json({ status: sessionStatus });
+});
+
+// Logout session
+app.post('/api/session/logout', async (req, res) => {
+  await logoutSession();
+  res.status(200).json({ status: sessionStatus });
+});
+
+// ==========================================
+// REST API ENDPOINTS FOR MESSAGING
+// ==========================================
+
+// Middleware to verify session is active
+const verifySession = (req, res, next) => {
+  if (sessionStatus !== 'WORKING') {
+    return res.status(400).json({ error: 'WhatsApp session is not active. Please link WhatsApp first.' });
+  }
+  if (!sock) {
+    return res.status(500).json({ error: 'WhatsApp socket is not initialized.' });
+  }
+  next();
+};
+
+// Send Text Message
+app.post('/api/send/text', verifySession, async (req, res) => {
   try {
-    let result = null;
-
-    // 1. Session management routes
-    if (wahaEndpoint === 'api/sessions' && method === 'GET') {
-      result = [
-        {
-          name: 'default',
-          status: sessionStatus
-        }
-      ];
-    } else if (wahaEndpoint === 'api/sessions' && method === 'POST') {
-      await connectToWhatsApp();
-      result = { status: sessionStatus };
-    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/start$/)) {
-      await connectToWhatsApp();
-      result = { status: sessionStatus };
-    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/stop$/)) {
-      await stopSession();
-      result = { status: sessionStatus };
-    } else if (wahaEndpoint.match(/^api\/sessions\/([^\/]+)\/logout$/)) {
-      await logoutSession();
-      result = { status: sessionStatus };
-    } else if (wahaEndpoint.match(/^api\/([^\/]+)\/auth\/qr$/)) {
-      if (qrCodeString) {
-        result = { value: qrCodeString };
-      } else {
-        result = { error: 'QR Code not generated yet. Ensure session status is SCAN_QR_CODE.' };
-      }
-    } 
-    // 2. Messaging routes (require active connection)
-    else {
-      if (sessionStatus !== 'WORKING') {
-        return res.status(400).json({ error: 'WhatsApp session is not active. Please link WhatsApp first.' });
-      }
-      if (!sock) {
-        return res.status(500).json({ error: 'WhatsApp socket is not initialized.' });
-      }
-
-      const jid = getJid(payload.chatId);
-
-      if (wahaEndpoint === 'api/sendText') {
-        result = await sock.sendMessage(jid, { text: payload.text });
-      } else if (wahaEndpoint === 'api/sendImage') {
-        const media = getMediaContent(payload.file);
-        result = await sock.sendMessage(jid, { image: media, caption: payload.caption });
-      } else if (wahaEndpoint === 'api/sendVideo') {
-        const media = getMediaContent(payload.file);
-        result = await sock.sendMessage(jid, { video: media, caption: payload.caption });
-      } else if (wahaEndpoint === 'api/sendAudio') {
-        const media = getMediaContent(payload.file);
-        result = await sock.sendMessage(jid, { audio: media, mimetype: payload.file.mimetype || 'audio/mp4' });
-      } else if (wahaEndpoint === 'api/sendFile') {
-        const media = getMediaContent(payload.file);
-        result = await sock.sendMessage(jid, { document: media, mimetype: payload.file.mimetype || 'application/octet-stream', fileName: payload.file.filename });
-      } else if (wahaEndpoint === 'api/sendLocation') {
-        result = await sock.sendMessage(jid, {
-          location: {
-            degreesLatitude: payload.latitude,
-            degreesLongitude: payload.longitude
-          }
-        });
-      } else if (wahaEndpoint === 'api/sendContactVcard') {
-        const contactName = (payload.contact.firstName + ' ' + (payload.contact.lastName || '')).trim();
-        const vcard = 'BEGIN:VCARD\n' +
-                      'VERSION:3.0\n' +
-                      'FN:' + contactName + '\n' +
-                      'TEL;type=CELL;waid=' + payload.contact.phoneNumber + ':+ ' + payload.contact.phoneNumber + '\n' +
-                      'END:VCARD';
-        result = await sock.sendMessage(jid, { 
-          contacts: { 
-            displayName: payload.contact.firstName, 
-            contacts: [{ vcard }] 
-          } 
-        });
-      } else {
-        return res.status(404).json({ error: `Method ${wahaEndpoint} not supported in direct mode` });
-      }
-    }
-
+    const { to, text } = req.body;
+    if (!to || !text) return res.status(400).json({ error: 'Missing parameters: to and text are required.' });
+    
+    const jid = getJid(to);
+    const result = await sock.sendMessage(jid, { text });
     res.status(200).json(result);
   } catch (error) {
-    console.error('[API Error]:', error);
-    res.status(500).json({
-      error: 'WhatsApp Connection Request Failed',
-      details: error.message
+    console.error('[API sendText Error]:', error);
+    res.status(500).json({ error: 'Failed to send text message', details: error.message });
+  }
+});
+
+// Send Image Message
+app.post('/api/send/image', verifySession, async (req, res) => {
+  try {
+    const { to, file, caption } = req.body;
+    if (!to || !file) return res.status(400).json({ error: 'Missing parameters: to and file are required.' });
+    
+    const jid = getJid(to);
+    const media = getMediaContent(file);
+    const result = await sock.sendMessage(jid, { image: media, caption });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendImage Error]:', error);
+    res.status(500).json({ error: 'Failed to send image message', details: error.message });
+  }
+});
+
+// Send Video Message
+app.post('/api/send/video', verifySession, async (req, res) => {
+  try {
+    const { to, file, caption } = req.body;
+    if (!to || !file) return res.status(400).json({ error: 'Missing parameters: to and file are required.' });
+    
+    const jid = getJid(to);
+    const media = getMediaContent(file);
+    const result = await sock.sendMessage(jid, { video: media, caption });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendVideo Error]:', error);
+    res.status(500).json({ error: 'Failed to send video message', details: error.message });
+  }
+});
+
+// Send Audio Message
+app.post('/api/send/audio', verifySession, async (req, res) => {
+  try {
+    const { to, file } = req.body;
+    if (!to || !file) return res.status(400).json({ error: 'Missing parameters: to and file are required.' });
+    
+    const jid = getJid(to);
+    const media = getMediaContent(file);
+    const result = await sock.sendMessage(jid, { audio: media, mimetype: file.mimetype || 'audio/mp4' });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendAudio Error]:', error);
+    res.status(500).json({ error: 'Failed to send audio message', details: error.message });
+  }
+});
+
+// Send Document Message
+app.post('/api/send/document', verifySession, async (req, res) => {
+  try {
+    const { to, file } = req.body;
+    if (!to || !file) return res.status(400).json({ error: 'Missing parameters: to and file are required.' });
+    
+    const jid = getJid(to);
+    const media = getMediaContent(file);
+    const result = await sock.sendMessage(jid, { 
+      document: media, 
+      mimetype: file.mimetype || 'application/octet-stream', 
+      fileName: file.filename || 'document' 
     });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendDocument Error]:', error);
+    res.status(500).json({ error: 'Failed to send document message', details: error.message });
+  }
+});
+
+// Send Location Message
+app.post('/api/send/location', verifySession, async (req, res) => {
+  try {
+    const { to, latitude, longitude, name } = req.body;
+    if (!to || latitude === undefined || longitude === undefined) {
+      return res.status(400).json({ error: 'Missing parameters: to, latitude, and longitude are required.' });
+    }
+    
+    const jid = getJid(to);
+    const result = await sock.sendMessage(jid, { 
+      location: { 
+        degreesLatitude: parseFloat(latitude), 
+        degreesLongitude: parseFloat(longitude),
+        name: name
+      } 
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendLocation Error]:', error);
+    res.status(500).json({ error: 'Failed to send location message', details: error.message });
+  }
+});
+
+// Send Contact Message
+app.post('/api/send/contact', verifySession, async (req, res) => {
+  try {
+    const { to, contactName, phoneNumber } = req.body;
+    if (!to || !contactName || !phoneNumber) {
+      return res.status(400).json({ error: 'Missing parameters: to, contactName, and phoneNumber are required.' });
+    }
+    
+    const jid = getJid(to);
+    const vcard = 'BEGIN:VCARD\n' +
+                  'VERSION:3.0\n' +
+                  'FN:' + contactName.trim() + '\n' +
+                  'TEL;type=CELL;waid=' + phoneNumber.replace(/[^\d]/g, '') + ':+ ' + phoneNumber.trim() + '\n' +
+                  'END:VCARD';
+                  
+    const result = await sock.sendMessage(jid, { 
+      contacts: { 
+        displayName: contactName, 
+        contacts: [{ vcard }] 
+      } 
+    });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendContact Error]:', error);
+    res.status(500).json({ error: 'Failed to send contact message', details: error.message });
   }
 });
 
@@ -255,7 +338,7 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`==================================================`);
-  console.log(` Direct WhatsApp Control Panel running on port ${PORT}`);
+  console.log(` Direct Baileys API Server running on port ${PORT}`);
   console.log(` Open http://localhost:${PORT} in your web browser`);
   console.log(`==================================================`);
 });

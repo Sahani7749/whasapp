@@ -212,37 +212,116 @@ function setupNavigation() {
   });
 }
 
-// Core API Proxy Caller
+// Core API Proxy Caller (Refactored to map directly to local REST endpoints)
 async function callWahaApi(endpoint, payload = null, method = 'POST') {
-  const headers = {
-    'Content-Type': 'application/json',
-    'x-waha-url': state.settings.url,
-    'x-waha-endpoint': endpoint
+  let url = '';
+  let options = {
+    method: method,
+    headers: {
+      'Content-Type': 'application/json'
+    }
   };
+
+  // Map legacy WAHA endpoints to direct Baileys REST API endpoints
+  if (endpoint === 'api/sessions' && method === 'GET') {
+    url = '/api/session/status';
+    options.method = 'GET';
+  } else if (endpoint === 'api/sessions' && method === 'POST') {
+    url = '/api/session/start';
+    options.method = 'POST';
+  } else if (endpoint.match(/^api\/sessions\/([^\/]+)\/start$/)) {
+    url = '/api/session/start';
+    options.method = 'POST';
+  } else if (endpoint.match(/^api\/sessions\/([^\/]+)\/stop$/)) {
+    url = '/api/session/stop';
+    options.method = 'POST';
+  } else if (endpoint.match(/^api\/sessions\/([^\/]+)\/logout$/)) {
+    url = '/api/session/logout';
+    options.method = 'POST';
+  } else if (endpoint.match(/^api\/([^\/]+)\/auth\/qr$/)) {
+    url = '/api/session/qr';
+    options.method = 'GET';
+  } 
   
-  if (state.settings.apiKey) {
-    headers['x-waha-api-key'] = state.settings.apiKey;
-  }
-  
-  try {
-    const response = await fetch('/api/proxy', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify({
-        method: method,
-        payload: payload
-      })
+  // Messaging Endpoints Mapping
+  else if (endpoint === 'api/sendText') {
+    url = '/api/send/text';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      text: payload.text
     });
-    
+  } else if (endpoint === 'api/sendImage') {
+    url = '/api/send/image';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      file: payload.file,
+      caption: payload.caption
+    });
+  } else if (endpoint === 'api/sendVideo') {
+    url = '/api/send/video';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      file: payload.file,
+      caption: payload.caption
+    });
+  } else if (endpoint === 'api/sendAudio') {
+    url = '/api/send/audio';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      file: payload.file
+    });
+  } else if (endpoint === 'api/sendFile') {
+    url = '/api/send/document';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      file: payload.file
+    });
+  } else if (endpoint === 'api/sendLocation') {
+    url = '/api/send/location';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      latitude: payload.latitude,
+      longitude: payload.longitude,
+      name: payload.name
+    });
+  } else if (endpoint === 'api/sendContactVcard') {
+    url = '/api/send/contact';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      contactName: payload.contact.firstName,
+      phoneNumber: payload.contact.phoneNumber
+    });
+  } else {
+    // Custom endpoint fallback
+    url = `/${endpoint}`;
+    if (payload && method !== 'GET') {
+      options.body = JSON.stringify(payload);
+    }
+  }
+
+  try {
+    const response = await fetch(url, options);
     const data = await response.json();
+    
+    // Format the response for the legacy UI checkConnection parser
+    let formattedData = data;
+    if (url === '/api/session/status') {
+      formattedData = [
+        {
+          name: state.settings.sessionId,
+          status: data.status
+        }
+      ];
+    }
+
     return {
       status: response.status,
-      data: data
+      data: formattedData
     };
   } catch (error) {
     return {
       status: 500,
-      data: { error: 'Proxy request failed', details: error.message }
+      data: { error: 'Request failed', details: error.message }
     };
   }
 }
