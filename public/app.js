@@ -1083,19 +1083,19 @@ function updateDocsBaseUrl() {
   const curlTextEl = document.getElementById('example-text-curl');
   if (curlTextEl) {
     curlTextEl.textContent = `curl -X POST ${currentOrigin}/api/send/text \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "text": "Hello from my CRM!"}'`;
-    curlTextEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/text -H "Content-Type: application/json" -d '{"to": "919876543210", "text": "Hello from my CRM!"}'`;
+    curlTextEl.parentElement.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/text -H "Content-Type: application/json" -d '{"to": "919876543210", "text": "Hello from my CRM!"}'`;
   }
 
   const curlImageEl = document.getElementById('example-image-curl');
   if (curlImageEl) {
     curlImageEl.textContent = `curl -X POST ${currentOrigin}/api/send/image \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "file": {"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}, "caption": "Beautiful design!"}'`;
-    curlImageEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/image -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}, "caption": "Beautiful design!"}'`;
+    curlImageEl.parentElement.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/image -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe"}, "caption": "Beautiful design!"}'`;
   }
 
   const curlVideoEl = document.getElementById('example-video-curl');
   if (curlVideoEl) {
     curlVideoEl.textContent = `curl -X POST ${currentOrigin}/api/send/video \\\n  -H "Content-Type: application/json" \\\n  -d '{"to": "919876543210", "file": {"url": "https://www.w3schools.com/html/mov_bbb.mp4"}, "caption": "Enjoy the video!"}'`;
-    curlVideoEl.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/video -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://www.w3schools.com/html/mov_bbb.mp4"}, "caption": "Enjoy the video!"}'`;
+    curlVideoEl.parentElement.nextElementSibling.dataset.clipboard = `curl -X POST ${currentOrigin}/api/send/video -H "Content-Type: application/json" -d '{"to": "919876543210", "file": {"url": "https://www.w3schools.com/html/mov_bbb.mp4"}, "caption": "Enjoy the video!"}'`;
   }
 
   // Update PHP & Python templates
