@@ -297,6 +297,23 @@ async function checkConnection(forceRefreshUi = false) {
     if (elements.wahaOfflineBanner) {
       elements.wahaWarningUrl.textContent = state.settings.url;
       elements.wahaOfflineBanner.classList.remove('hidden');
+      
+      const isSettingsLocal = state.settings.url.includes('localhost') || state.settings.url.includes('127.0.0.1');
+      const isAppRemote = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+      
+      const warningH = elements.wahaOfflineBanner.querySelector('.warning-content h4');
+      const warningP = elements.wahaOfflineBanner.querySelector('.warning-content p');
+      const codeBox = elements.wahaOfflineBanner.querySelector('.banner-code-box');
+      
+      if (isAppRemote && isSettingsLocal) {
+        warningH.textContent = 'Localhost URL Configured on Remote Server';
+        warningP.innerHTML = `You are hosting this Control Panel on a remote server (<strong>${window.location.hostname}</strong>), but your WAHA URL is pointing to <strong>${state.settings.url}</strong>. The Hostinger server cannot reach your local PC.<br><br><strong>How to fix:</strong><br>1. Expose your local WAHA using ngrok: <code>ngrok http 3000</code><br>2. Copy the public ngrok URL (e.g. <code>https://xxx.ngrok-free.app</code>)<br>3. Paste it in the <strong>Settings</strong> page and save.`;
+        if (codeBox) codeBox.classList.add('hidden');
+      } else {
+        warningH.textContent = 'WAHA Server is Offline';
+        warningP.innerHTML = `The control panel cannot reach the WAHA server at <strong>${state.settings.url}</strong>. Please make sure the WAHA Docker container is running by opening your command prompt and executing:`;
+        if (codeBox) codeBox.classList.remove('hidden');
+      }
     }
     updateSessionStatusUI('STOPPED');
     return false;
