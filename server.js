@@ -1,3 +1,21 @@
+const debugLogs = [];
+const originalLog = console.log;
+const originalError = console.error;
+
+console.log = (...args) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+  debugLogs.push(`[LOG] ${new Date().toISOString()} - ${msg}`);
+  if (debugLogs.length > 200) debugLogs.shift();
+  originalLog.apply(console, args);
+};
+
+console.error = (...args) => {
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ');
+  debugLogs.push(`[ERR] ${new Date().toISOString()} - ${msg}`);
+  if (debugLogs.length > 200) debugLogs.shift();
+  originalError.apply(console, args);
+};
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -468,6 +486,29 @@ app.post('/api/send/contact', verifySession, async (req, res) => {
     console.error('[API sendContact Error]:', error);
     res.status(500).json({ error: 'Failed to send contact message', details: error.message });
   }
+});
+
+// Debug endpoint to capture logs on shared hosting
+app.get('/api/debug-logs', (req, res) => {
+  let permissionCheck = 'Check failed';
+  try {
+    const testPath = path.join(__dirname, 'permission_test.txt');
+    fs.writeFileSync(testPath, 'test');
+    fs.unlinkSync(testPath);
+    permissionCheck = 'WRITE PERMISSION OK';
+  } catch (err) {
+    permissionCheck = `WRITE PERMISSION ERROR: ${err.message}`;
+  }
+
+  res.status(200).json({
+    nodeVersion: process.version,
+    platform: process.platform,
+    port: PORT,
+    env: process.env.NODE_ENV || 'production',
+    sessionStatus,
+    writePermission: permissionCheck,
+    logs: debugLogs
+  });
 });
 
 // Fallback to serve index.html for single page application routing
