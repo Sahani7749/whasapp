@@ -94,7 +94,7 @@ app.post('/api/proxy', async (req, res) => {
     const responseData = result && result.data !== undefined ? result.data : result;
     res.status(200).json(responseData);
   } catch (error) {
-    console.error('[Proxy Error via SDK]:', error.message);
+    console.error('[Proxy Error via SDK]:', error);
     const status = error.response ? error.response.status : 500;
     const details = error.response ? error.response.data : error.message;
 
