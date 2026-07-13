@@ -23,6 +23,55 @@ let sock = null;
 let sessionStatus = 'STOPPED';
 let qrCodeString = null;
 const AUTH_DIR = path.join(__dirname, 'auth_info_baileys');
+const WEBHOOK_FILE = path.join(__dirname, 'webhook_config.json');
+
+// Webhook Helpers
+function getWebhookConfig() {
+  if (fs.existsSync(WEBHOOK_FILE)) {
+    try {
+      const data = fs.readFileSync(WEBHOOK_FILE, 'utf8');
+      return JSON.parse(data);
+    } catch (e) {
+      console.error('Error reading webhook config:', e);
+    }
+  }
+  return null;
+}
+
+function saveWebhookConfig(config) {
+  try {
+    fs.writeFileSync(WEBHOOK_FILE, JSON.stringify(config, null, 2), 'utf8');
+  } catch (e) {
+    console.error('Error writing webhook config:', e);
+  }
+}
+
+function deleteWebhookConfig() {
+  try {
+    if (fs.existsSync(WEBHOOK_FILE)) {
+      fs.unlinkSync(WEBHOOK_FILE);
+    }
+  } catch (e) {
+    console.error('Error deleting webhook config:', e);
+  }
+}
+
+async function sendWebhook(url, payload) {
+  console.log(`[Webhook] Sending payload to ${url}...`);
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'WhatsApp-Control-Panel-Webhook'
+      },
+      body: JSON.stringify(payload)
+    });
+    console.log(`[Webhook] Sent to ${url}, Response status: ${response.status}`);
+  } catch (err) {
+    console.error(`[Webhook Error] Failed to send to ${url}:`, err.message);
+  }
+}
 
 // Initialize WhatsApp connection if credentials already exist (auto-connect on startup)
 if (fs.existsSync(path.join(AUTH_DIR, 'creds.json'))) {
@@ -78,6 +127,30 @@ async function connectToWhatsApp() {
     });
 
     sock.ev.on('creds.update', saveCreds);
+
+    // Listen for incoming messages and trigger Webhook
+    sock.ev.on('messages.upsert', async (m) => {
+      if (m.type === 'notify') {
+        for (const msg of m.messages) {
+          console.log(`[Baileys] New message received from: ${msg.key.remoteJid}`);
+          const webhook = getWebhookConfig();
+          if (webhook && webhook.url) {
+            sendWebhook(webhook.url, {
+              event: 'message.received',
+              session: 'default',
+              data: {
+                id: msg.key.id,
+                from: msg.key.remoteJid,
+                fromMe: msg.key.fromMe,
+                pushName: msg.pushName || null,
+                message: msg.message || null,
+                timestamp: msg.messageTimestamp
+              }
+            });
+          }
+        }
+      }
+    });
 
   } catch (err) {
     console.error('[Baileys] Error starting WhatsApp:', err);
@@ -180,6 +253,72 @@ app.post('/api/session/stop', async (req, res) => {
 app.post('/api/session/logout', async (req, res) => {
   await logoutSession();
   res.status(200).json({ status: sessionStatus });
+});
+
+// ==========================================
+// REST API ENDPOINTS FOR WEBHOOKS
+// ==========================================
+
+// Get webhook URL
+app.get('/api/webhook', (req, res) => {
+  const config = getWebhookConfig();
+  if (config) {
+    res.status(200).json(config);
+  } else {
+    res.status(200).json({ url: null });
+  }
+});
+
+// Save webhook URL
+app.post('/api/webhook', (req, res) => {
+  const { url } = req.body;
+  if (!url) return res.status(400).json({ error: 'Webhook URL is required' });
+  
+  saveWebhookConfig({ url });
+  res.status(200).json({ success: true, url });
+});
+
+// Delete webhook URL
+app.delete('/api/webhook', (req, res) => {
+  deleteWebhookConfig();
+  res.status(200).json({ success: true });
+});
+
+// Test webhook endpoint
+app.post('/api/webhook/test', async (req, res) => {
+  const config = getWebhookConfig();
+  if (!config || !config.url) {
+    return res.status(400).json({ error: 'No webhook URL registered' });
+  }
+  
+  const testPayload = {
+    event: 'webhook.test',
+    session: 'default',
+    timestamp: Math.floor(Date.now() / 1000),
+    data: {
+      message: 'This is a test notification from your WhatsApp Control Panel Webhook!',
+      status: 'success'
+    }
+  };
+  
+  try {
+    const response = await fetch(config.url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'WhatsApp-Control-Panel-Webhook'
+      },
+      body: JSON.stringify(testPayload)
+    });
+    
+    if (response.ok) {
+      res.status(200).json({ success: true, details: `Webhook responded with status ${response.status}` });
+    } else {
+      res.status(502).json({ error: 'Webhook server returned error status', details: `Status code ${response.status}` });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to contact webhook server', details: err.message });
+  }
 });
 
 // ==========================================

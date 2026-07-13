@@ -464,58 +464,53 @@
         <!-- SETTINGS VIEW -->
         <section id="view-settings" class="tab-view">
           <div class="settings-grid">
+            <!-- Session Status Card -->
             <div class="glass-card settings-card">
               <div class="card-header">
-                <h3>WAHA Server Settings</h3>
-                <p>Configure details for connecting to your WhatsApp HTTP API instance</p>
+                <h3>WhatsApp Session Info</h3>
+                <p>Status of your direct WhatsApp web connection</p>
               </div>
               <div class="card-body">
-                <form id="settings-form">
-                  <div class="form-group">
-                    <label for="settings-waha-url">WAHA URL <span class="required">*</span></label>
-                    <input type="url" id="settings-waha-url" value="http://localhost:3000" placeholder="e.g. http://localhost:3000" required>
-                    <span class="input-tip">Specify the domain/IP and port where WAHA docker is running.</span>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="settings-web-secret">API Key / Web Secret (X-Api-Key)</label>
-                    <input type="password" id="settings-web-secret" placeholder="Enter API Web Secret key if configured" autocomplete="off">
-                    <span class="input-tip">Leave empty if WAHA runs without authentication (`WAHA_API_KEY` is not set).</span>
-                  </div>
-
-                  <div class="form-group">
-                    <label for="settings-session-id">Active Session ID <span class="required">*</span></label>
-                    <input type="text" id="settings-session-id" value="default" placeholder="e.g., default" required>
-                    <span class="input-tip">The WAHA session profile name. Defaults to 'default'.</span>
-                  </div>
-
-                  <div class="settings-actions">
-                    <button type="submit" class="btn btn-primary">Save Settings</button>
-                    <button type="button" class="btn btn-secondary" id="btn-settings-test">Test Connection</button>
-                  </div>
-                </form>
+                <div class="form-group">
+                  <label>Active Session ID</label>
+                  <input type="text" id="settings-session-id" value="default" disabled style="background-color: rgba(255,255,255,0.02); color: var(--color-text-muted); cursor: not-allowed;">
+                </div>
+                <div class="form-group">
+                  <label>Host Environment</label>
+                  <input type="text" id="settings-host" value="NodeJS (Direct Baileys)" disabled style="background-color: rgba(255,255,255,0.02); color: var(--color-text-muted); cursor: not-allowed;">
+                </div>
+                <div class="settings-actions" style="margin-top: 24px;">
+                  <button type="button" class="btn btn-primary" id="btn-settings-test">Test Connection Status</button>
+                </div>
               </div>
             </div>
 
-            <!-- Configuration Helper info -->
-            <div class="glass-card block-card">
-              <div class="card-header">
-                <h3>Docker Cheat Sheet</h3>
-                <p>How to quickly spin up a WAHA instance locally</p>
+            <!-- Webhook Config Card -->
+            <div class="glass-card settings-card">
+              <div class="card-header flex-header" style="padding: 0 0 12px 0; border: none; margin-bottom: 8px;">
+                <div>
+                  <h3>Webhook Configuration</h3>
+                  <p>Receive WhatsApp events on your server</p>
+                </div>
+                <div class="status-pill offline" id="webhook-status-badge">
+                  <span class="status-indicator-dot"></span>
+                  <span>Inactive</span>
+                </div>
               </div>
-              <div class="card-body sheet-body">
-                <p>To run WAHA locally, open your terminal (Command Prompt/PowerShell) and execute the following Docker command:</p>
-                <div class="code-snippet-box">
-                  <pre><code>docker run -it -p 3000:3000/tcp devlikeapro/waha</code></pre>
-                  <button class="copy-code-btn" data-clipboard="docker run -it -p 3000:3000/tcp devlikeapro/waha">Copy</button>
-                </div>
-                <div class="divider"></div>
-                <p>If you want to configure an API Key (Web Secret), use:</p>
-                <div class="code-snippet-box">
-                  <pre><code>docker run -it -p 3000:3000/tcp -e WAHA_API_KEY=my_secure_secret devlikeapro/waha</code></pre>
-                  <button class="copy-code-btn" data-clipboard="docker run -it -p 3000:3000/tcp -e WAHA_API_KEY=my_secure_secret devlikeapro/waha">Copy</button>
-                </div>
-                <p class="text-xs text-muted" style="margin-top: 1rem;">Make sure you copy this secret and paste it inside the "API Key / Web Secret" field on the left.</p>
+              <div class="card-body" style="padding-top: 10px;">
+                <form id="webhook-form">
+                  <div class="form-group">
+                    <label for="settings-webhook-url">Webhook URL</label>
+                    <input type="url" id="settings-webhook-url" placeholder="https://yourdomain.com/api/webhook" required>
+                    <span class="input-tip">All incoming WhatsApp messages will be sent via POST requests to this URL.</span>
+                  </div>
+
+                  <div class="settings-actions" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button type="submit" class="btn btn-success" id="btn-webhook-save">Save Webhook</button>
+                    <button type="button" class="btn btn-secondary" id="btn-webhook-test">Test Webhook</button>
+                    <button type="button" class="btn btn-danger" id="btn-webhook-delete">Delete</button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

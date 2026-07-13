@@ -32,11 +32,13 @@ const elements = {
   activeSessionName: document.getElementById('active-session-name'),
   
   // Settings view
-  settingsForm: document.getElementById('settings-form'),
-  settingsUrl: document.getElementById('settings-waha-url'),
-  settingsApiKey: document.getElementById('settings-web-secret'),
   settingsSessionId: document.getElementById('settings-session-id'),
   btnSettingsTest: document.getElementById('btn-settings-test'),
+  webhookForm: document.getElementById('webhook-form'),
+  webhookUrl: document.getElementById('settings-webhook-url'),
+  webhookStatusBadge: document.getElementById('webhook-status-badge'),
+  btnWebhookTest: document.getElementById('btn-webhook-test'),
+  btnWebhookDelete: document.getElementById('btn-webhook-delete'),
   
   // Dashboard view
   dbSessionStatus: document.getElementById('dashboard-session-status'),
@@ -85,6 +87,8 @@ document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
   setupNavigation();
   setupSettingsForm();
+  setupWebhookForm();
+  loadWebhookSettings();
   setupSessionActions();
   setupApiConsole();
   setupFilePickers();
@@ -146,44 +150,30 @@ function loadSettings() {
   }
   
   // Update Settings Form Fields
-  elements.settingsUrl.value = state.settings.url;
-  elements.settingsApiKey.value = state.settings.apiKey || '';
-  elements.settingsSessionId.value = state.settings.sessionId;
+  if (elements.settingsSessionId) {
+    elements.settingsSessionId.value = state.settings.sessionId;
+  }
   
   // Update UI components
   elements.activeSessionName.textContent = state.settings.sessionId;
   elements.dbSessionName.textContent = state.settings.sessionId;
-  elements.dbWahaUrl.textContent = state.settings.url;
-}
-
-function saveSettings(e) {
-  if (e) e.preventDefault();
   
-  state.settings.url = elements.settingsUrl.value.trim();
-  state.settings.apiKey = elements.settingsApiKey.value.trim();
-  state.settings.sessionId = elements.settingsSessionId.value.trim();
-  
-  localStorage.setItem('waha_settings', JSON.stringify(state.settings));
-  
-  elements.activeSessionName.textContent = state.settings.sessionId;
-  elements.dbSessionName.textContent = state.settings.sessionId;
-  elements.dbWahaUrl.textContent = state.settings.url;
-  
-  showToast('Settings saved successfully!', 'success');
-  checkConnection(true);
+  const dbUrl = document.getElementById('dashboard-waha-url');
+  if (dbUrl) dbUrl.textContent = window.location.origin;
 }
 
 function setupSettingsForm() {
-  elements.settingsForm.addEventListener('submit', saveSettings);
-  elements.btnSettingsTest.addEventListener('click', async () => {
-    showToast('Testing WAHA API connection...', 'info');
-    const connected = await checkConnection(true);
-    if (connected) {
-      showToast('Successfully connected to WAHA server!', 'success');
-    } else {
-      showToast('Could not connect. Double check URL and web secret.', 'danger');
-    }
-  });
+  if (elements.btnSettingsTest) {
+    elements.btnSettingsTest.addEventListener('click', async () => {
+      showToast('Testing server connection...', 'info');
+      const connected = await checkConnection(true);
+      if (connected) {
+        showToast('Successfully connected to server!', 'success');
+      } else {
+        showToast('Could not connect to server.', 'danger');
+      }
+    });
+  }
 }
 
 // Navigation Handlers
@@ -992,4 +982,90 @@ function setupCopyButtons() {
       });
     });
   });
+}
+
+// Webhook Handlers
+async function loadWebhookSettings() {
+  try {
+    const res = await fetch('/api/webhook');
+    const data = await res.json();
+    if (data && data.url) {
+      elements.webhookUrl.value = data.url;
+      elements.webhookStatusBadge.className = 'status-pill online';
+      elements.webhookStatusBadge.querySelector('span:last-child').textContent = 'Active';
+    } else {
+      elements.webhookUrl.value = '';
+      elements.webhookStatusBadge.className = 'status-pill offline';
+      elements.webhookStatusBadge.querySelector('span:last-child').textContent = 'Inactive';
+    }
+  } catch (e) {
+    console.error('Error loading webhook settings:', e);
+  }
+}
+
+async function saveWebhookSettings(e) {
+  if (e) e.preventDefault();
+  const url = elements.webhookUrl.value.trim();
+  if (!url) return;
+
+  showToast('Saving webhook URL...', 'info');
+  try {
+    const res = await fetch('/api/webhook', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+    if (res.status === 200) {
+      showToast('Webhook saved successfully!', 'success');
+      loadWebhookSettings();
+    } else {
+      showToast(`Error: ${data.error || 'Failed to save webhook'}`, 'danger');
+    }
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'danger');
+  }
+}
+
+async function testWebhook() {
+  showToast('Sending test payload to webhook...', 'info');
+  try {
+    const res = await fetch('/api/webhook/test', { method: 'POST' });
+    const data = await res.json();
+    if (res.status === 200) {
+      showToast('Test webhook request sent successfully!', 'success');
+    } else {
+      showToast(`Webhook Test Failed: ${data.details || data.error}`, 'danger');
+    }
+  } catch (err) {
+    showToast(`Test failed: ${err.message}`, 'danger');
+  }
+}
+
+async function deleteWebhook() {
+  if (!confirm('Are you sure you want to delete the registered webhook URL?')) return;
+  showToast('Deleting webhook...', 'info');
+  try {
+    const res = await fetch('/api/webhook', { method: 'DELETE' });
+    if (res.status === 200) {
+      showToast('Webhook deleted successfully!', 'success');
+      loadWebhookSettings();
+    } else {
+      showToast('Failed to delete webhook', 'danger');
+    }
+  } catch (err) {
+    showToast(`Error: ${err.message}`, 'danger');
+  }
+}
+
+function setupWebhookForm() {
+  if (elements.webhookForm) {
+    elements.webhookForm.addEventListener('submit', saveWebhookSettings);
+  }
+  if (elements.btnWebhookTest) {
+    elements.btnWebhookTest.addEventListener('click', testWebhook);
+  }
+  if (elements.btnWebhookDelete) {
+    elements.btnWebhookDelete.addEventListener('click', deleteWebhook);
+  }
 }
