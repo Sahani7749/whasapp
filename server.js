@@ -259,15 +259,3 @@ app.listen(PORT, () => {
   console.log(` Open http://localhost:${PORT} in your web browser`);
   console.log(`==================================================`);
 });
-
-// Fallback to serve index.html for single page application routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, () => {
-  console.log(`==================================================`);
-  console.log(` WAHA WhatsApp Control Panel running on port ${PORT}`);
-  console.log(` Open http://localhost:${PORT} in your web browser`);
-  console.log(`==================================================`);
-});
