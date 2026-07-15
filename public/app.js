@@ -15,7 +15,8 @@ const state = {
     image: null,
     video: null,
     audio: null,
-    file: null
+    file: null,
+    sticker: null
   }
 };
 
@@ -75,6 +76,7 @@ const elements = {
   videoFile: document.getElementById('video-file'),
   audioFile: document.getElementById('audio-file'),
   fileFile: document.getElementById('file-file'),
+  stickerFile: document.getElementById('sticker-file'),
   
   // Code inputs
   customPayload: document.getElementById('custom-payload'),
@@ -281,6 +283,12 @@ async function callWahaApi(endpoint, payload = null, method = 'POST') {
       to: payload.chatId,
       contactName: payload.contact.firstName,
       phoneNumber: payload.contact.phoneNumber
+    });
+  } else if (endpoint === 'api/sendSticker') {
+    url = '/api/send/sticker';
+    options.body = JSON.stringify({
+      to: payload.chatId,
+      file: payload.file
     });
   } else {
     // Custom endpoint fallback
@@ -691,6 +699,7 @@ function setupFilePickers() {
   registerPicker('video-file', 'video-local-group', 'video', 'video-file-info');
   registerPicker('audio-file', 'audio-local-group', 'audio', 'audio-file-info');
   registerPicker('file-file', 'file-local-group', 'file', 'file-file-info');
+  registerPicker('sticker-file', 'sticker-local-group', 'sticker', 'sticker-file-info');
 }
 
 // Log Feed Renderer inside Console
@@ -930,6 +939,32 @@ async function executeApiRequest() {
           phoneNumber: phone.replace(/[^\d+]/g, '') // Keep only digits and + sign for contacts
         }
       };
+      break;
+
+    case 'send-sticker':
+      endpoint = 'api/sendSticker';
+      const stickerType = document.querySelector('input[name="sticker-src-type"]:checked').value;
+      
+      payload = { chatId, session };
+
+      if (stickerType === 'local') {
+        if (!state.files.sticker) {
+          showToast('Please select a local WebP sticker file', 'danger');
+          return;
+        }
+        payload.file = {
+          mimetype: state.files.sticker.mimetype,
+          filename: state.files.sticker.filename,
+          data: state.files.sticker.data
+        };
+      } else {
+        const url = document.getElementById('sticker-url').value.trim();
+        if (!url) {
+          showToast('Sticker URL is required', 'danger');
+          return;
+        }
+        payload.file = { url: url };
+      }
       break;
 
     case 'send-custom':

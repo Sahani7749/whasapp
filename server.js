@@ -155,6 +155,8 @@ async function connectToWhatsApp() {
           if (webhook && webhook.url) {
             const senderJid = msg.key.participant || msg.key.remoteJid;
             const senderNumber = senderJid ? senderJid.split('@')[0] : null;
+            const deviceJid = sock?.user?.id;
+            const deviceNumber = deviceJid ? deviceJid.split(':')[0].split('@')[0] : null;
             sendWebhook(webhook.url, {
               event: 'message.received',
               session: 'default',
@@ -165,6 +167,7 @@ async function connectToWhatsApp() {
                 pushName: msg.pushName || null,
                 pushNumber: senderNumber,
                 senderNumber: senderNumber,
+                deviceNumber: deviceNumber,
                 message: msg.message || null,
                 timestamp: msg.messageTimestamp
               }
@@ -489,6 +492,22 @@ app.post('/api/send/contact', verifySession, async (req, res) => {
   } catch (error) {
     console.error('[API sendContact Error]:', error);
     res.status(500).json({ error: 'Failed to send contact message', details: error.message });
+  }
+});
+
+// Send Sticker Message
+app.post('/api/send/sticker', verifySession, async (req, res) => {
+  try {
+    const { to, file } = req.body;
+    if (!to || !file) return res.status(400).json({ error: 'Missing parameters: to and file are required.' });
+    
+    const jid = getJid(to);
+    const media = getMediaContent(file);
+    const result = await sock.sendMessage(jid, { sticker: media });
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('[API sendSticker Error]:', error);
+    res.status(500).json({ error: 'Failed to send sticker message', details: error.message });
   }
 });
 

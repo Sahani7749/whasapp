@@ -206,6 +206,7 @@
                     <button class="form-tab" data-api-tab="send-file">Document</button>
                     <button class="form-tab" data-api-tab="send-location">Location</button>
                     <button class="form-tab" data-api-tab="send-contact">Contact</button>
+                    <button class="form-tab" data-api-tab="send-sticker">Sticker</button>
                     <button class="form-tab" data-api-tab="send-custom">Custom</button>
                   </div>
                 </div>
@@ -401,6 +402,37 @@
                     <div class="form-group">
                       <label for="contact-phone">Contact Phone Number <span class="required">*</span></label>
                       <input type="text" id="contact-phone" placeholder="e.g., +919876543210" required>
+                    </div>
+                  </div>
+
+                  <!-- STICKER PANEL -->
+                  <div class="form-panel" id="panel-send-sticker">
+                    <div class="form-group">
+                      <label>Sticker Source <span class="required">*</span></label>
+                      <div class="toggle-container">
+                        <label class="toggle-option active" data-src-toggle="local" data-target="sticker">
+                          <input type="radio" name="sticker-src-type" value="local" checked hidden>
+                          Upload File
+                        </label>
+                        <label class="toggle-option" data-src-toggle="url" data-target="sticker">
+                          <input type="radio" name="sticker-src-type" value="url" hidden>
+                          File URL
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <div class="form-group file-input-group" id="sticker-local-group">
+                      <label for="sticker-file" class="file-dropzone">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                        <span>Choose a WebP Sticker or drag it here</span>
+                        <span class="file-meta" id="sticker-file-info">WebP format (Max 1MB)</span>
+                        <input type="file" id="sticker-file" accept="image/webp" hidden>
+                      </label>
+                    </div>
+
+                    <div class="form-group url-input-group hidden" id="sticker-url-group">
+                      <label for="sticker-url">Sticker WebP URL</label>
+                      <input type="url" id="sticker-url" placeholder="https://example.com/path/to/sticker.webp">
                     </div>
                   </div>
 
@@ -754,6 +786,43 @@
   -H "Content-Type: application/json" \
   -d '{"to": "919876543210", "contactName": "John Doe", "phoneNumber": "919876543210"}'</code></pre>
                     <button class="copy-code-btn" data-clipboard='curl -X POST http://localhost:4000/api/send/contact -H "Content-Type: application/json" -d '\''{"to": "919876543210", "contactName": "John Doe", "phoneNumber": "919876543210"}'\''>Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Sticker Message Docs -->
+            <div class="glass-card">
+              <div class="card-header flex-header" style="border: none; padding-bottom: 0;">
+                <div>
+                  <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--color-text);">7. Send Sticker Message</h4>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--color-text-muted);">Send WhatsApp Sticker using a public WebP URL</p>
+                </div>
+                <div>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;">POST /api/send/sticker</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 style="margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Request Body JSON:</h5>
+                <div class="code-snippet-box" style="margin-bottom: 20px;">
+                  <pre><code>{
+  "to": "919876543210",
+  "file": {
+    "url": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h0Y3J1eWkxbTJid2thZHltYzB4Z3F6bmtmZ21xbDF3YmxsbjNsMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3usyBkYr1gOe9H/giphy.webp"
+  }
+}</code></pre>
+                  <button class="copy-code-btn" data-clipboard='{ "to": "919876543210", "file": { "url": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h0Y3J1eWkxbTJid2thZHltYzB4Z3F6bmtmZ21xbDF3YmxsbjNsMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3usyBkYr1gOe9H/giphy.webp" } }'>Copy</button>
+                </div>
+
+                <div class="docs-languages">
+                  <div class="lang-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <span style="font-weight: 500; font-size: 12px; color: var(--color-text-muted);">Code Example (Curl):</span>
+                  </div>
+                  <div class="code-snippet-box">
+                    <pre><code id="example-sticker-curl">curl -X POST http://localhost:4000/api/send/sticker \
+  -H "Content-Type: application/json" \
+  -d '{"to": "919876543210", "file": {"url": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h0Y3J1eWkxbTJid2thZHltYzB4Z3F6bmtmZ21xbDF3YmxsbjNsMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3usyBkYr1gOe9H/giphy.webp"}}'</code></pre>
+                    <button class="copy-code-btn" data-clipboard='curl -X POST http://localhost:4000/api/send/sticker -H "Content-Type: application/json" -d '\''{"to": "919876543210", "file": {"url": "https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h0Y3J1eWkxbTJid2thZHltYzB4Z3F6bmtmZ21xbDF3YmxsbjNsMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/du3J3usyBkYr1gOe9H/giphy.webp"}}'\''>Copy</button>
                   </div>
                 </div>
               </div>
