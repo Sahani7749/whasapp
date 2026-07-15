@@ -153,7 +153,7 @@ async function connectToWhatsApp() {
           console.log(`[Baileys] New message received from: ${msg.key.remoteJid}`);
           const webhook = getWebhookConfig();
           if (webhook && webhook.url) {
-            const senderJid = msg.key.participant || msg.key.remoteJid;
+            const senderJid = msg.key.senderPn || msg.key.participant || msg.key.remoteJid;
             const senderNumber = senderJid ? senderJid.split('@')[0] : null;
             const deviceJid = sock?.user?.id;
             const deviceNumber = deviceJid ? deviceJid.split(':')[0].split('@')[0] : null;
@@ -167,6 +167,7 @@ async function connectToWhatsApp() {
                 pushName: msg.pushName || null,
                 pushNumber: senderNumber,
                 senderNumber: senderNumber,
+                senderPn: msg.key.senderPn || null,
                 deviceNumber: deviceNumber,
                 message: msg.message || null,
                 timestamp: msg.messageTimestamp
