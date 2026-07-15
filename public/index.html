@@ -647,6 +647,118 @@
               </div>
             </div>
 
+            <!-- Send Document Message Docs -->
+            <div class="glass-card">
+              <div class="card-header flex-header" style="border: none; padding-bottom: 0;">
+                <div>
+                  <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--color-text);">4. Send Document Message</h4>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--color-text-muted);">Send documents using a public URL</p>
+                </div>
+                <div>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;">POST /api/send/document</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 style="margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Request Body JSON:</h5>
+                <div class="code-snippet-box" style="margin-bottom: 20px;">
+                  <pre><code>{
+  "to": "919876543210",
+  "file": {
+    "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf",
+    "filename": "dummy.pdf",
+    "mimetype": "application/pdf"
+  }
+}</code></pre>
+                  <button class="copy-code-btn" data-clipboard='{ "to": "919876543210", "file": { "url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", "filename": "dummy.pdf", "mimetype": "application/pdf" } }'>Copy</button>
+                </div>
+
+                <div class="docs-languages">
+                  <div class="lang-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <span style="font-weight: 500; font-size: 12px; color: var(--color-text-muted);">Code Example (Curl):</span>
+                  </div>
+                  <div class="code-snippet-box">
+                    <pre><code id="example-document-curl">curl -X POST http://localhost:4000/api/send/document \
+  -H "Content-Type: application/json" \
+  -d '{"to": "919876543210", "file": {"url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", "filename": "dummy.pdf", "mimetype": "application/pdf"}}'</code></pre>
+                    <button class="copy-code-btn" data-clipboard='curl -X POST http://localhost:4000/api/send/document -H "Content-Type: application/json" -d '\''{"to": "919876543210", "file": {"url": "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", "filename": "dummy.pdf", "mimetype": "application/pdf"}}'\''>Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Location Message Docs -->
+            <div class="glass-card">
+              <div class="card-header flex-header" style="border: none; padding-bottom: 0;">
+                <div>
+                  <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--color-text);">5. Send Location Message</h4>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--color-text-muted);">Send map location coordinates</p>
+                </div>
+                <div>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;">POST /api/send/location</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 style="margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Request Body JSON:</h5>
+                <div class="code-snippet-box" style="margin-bottom: 20px;">
+                  <pre><code>{
+  "to": "919876543210",
+  "latitude": 28.6139,
+  "longitude": 77.2090,
+  "name": "Connaught Place, New Delhi"
+}</code></pre>
+                  <button class="copy-code-btn" data-clipboard='{ "to": "919876543210", "latitude": 28.6139, "longitude": 77.2090, "name": "Connaught Place, New Delhi" }'>Copy</button>
+                </div>
+
+                <div class="docs-languages">
+                  <div class="lang-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <span style="font-weight: 500; font-size: 12px; color: var(--color-text-muted);">Code Example (Curl):</span>
+                  </div>
+                  <div class="code-snippet-box">
+                    <pre><code id="example-location-curl">curl -X POST http://localhost:4000/api/send/location \
+  -H "Content-Type: application/json" \
+  -d '{"to": "919876543210", "latitude": 28.6139, "longitude": 77.2090, "name": "Connaught Place, New Delhi"}'</code></pre>
+                    <button class="copy-code-btn" data-clipboard='curl -X POST http://localhost:4000/api/send/location -H "Content-Type: application/json" -d '\''{"to": "919876543210", "latitude": 28.6139, "longitude": 77.2090, "name": "Connaught Place, New Delhi"}'\''>Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Send Contact Message Docs -->
+            <div class="glass-card">
+              <div class="card-header flex-header" style="border: none; padding-bottom: 0;">
+                <div>
+                  <h4 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--color-text);">6. Send Contact Message</h4>
+                  <p style="margin: 4px 0 0 0; font-size: 13px; color: var(--color-text-muted);">Send contact cards (vCard)</p>
+                </div>
+                <div>
+                  <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.2); padding: 4px 8px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;">POST /api/send/contact</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 style="margin: 16px 0 8px 0; font-size: 14px; font-weight: 600;">Request Body JSON:</h5>
+                <div class="code-snippet-box" style="margin-bottom: 20px;">
+                  <pre><code>{
+  "to": "919876543210",
+  "contactName": "John Doe",
+  "phoneNumber": "919876543210"
+}</code></pre>
+                  <button class="copy-code-btn" data-clipboard='{ "to": "919876543210", "contactName": "John Doe", "phoneNumber": "919876543210" }'>Copy</button>
+                </div>
+
+                <div class="docs-languages">
+                  <div class="lang-tabs" style="display: flex; gap: 8px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 8px;">
+                    <span style="font-weight: 500; font-size: 12px; color: var(--color-text-muted);">Code Example (Curl):</span>
+                  </div>
+                  <div class="code-snippet-box">
+                    <pre><code id="example-contact-curl">curl -X POST http://localhost:4000/api/send/contact \
+  -H "Content-Type: application/json" \
+  -d '{"to": "919876543210", "contactName": "John Doe", "phoneNumber": "919876543210"}'</code></pre>
+                    <button class="copy-code-btn" data-clipboard='curl -X POST http://localhost:4000/api/send/contact -H "Content-Type: application/json" -d '\''{"to": "919876543210", "contactName": "John Doe", "phoneNumber": "919876543210"}'\''>Copy</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Other languages documentation helper card -->
             <div class="glass-card">
               <div class="card-header">
